@@ -21,10 +21,11 @@ import json
 with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
     counties = json.load(response)
 
-df = pd.read_csv("covid_confirmed_usafacts.csv")
-dates = list(df.columns[4:])
+cases = pd.read_csv("covid_confirmed_usafacts.csv")
+deaths = pd.read_csv("covid_deaths_usafacts.csv")
+dates = list(cases.columns[4:])
 drilldown_options = ["States","Counties"]
-states = list(pd.unique(df["State"]))
+states = list(pd.unique(cases["State"]))
 [drilldown_options.append(x) for x in states]
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -35,9 +36,9 @@ app.layout = html.Div([
     html.Div([
         html.Div([
             html.H4(children="Covid-19 Data:"),
-            dcc.Tabs(id='cases-death', value='cases', children=[
+            dcc.Tabs(id='cases-deaths', value='cases', children=[
                 dcc.Tab(label='Cases', value='cases'),
-                dcc.Tab(label='Deaths', value='death'),])
+                dcc.Tab(label='Deaths', value='deaths'),])
         ],className="three columns"),
         
         html.Div([
@@ -89,10 +90,16 @@ def update_display_date(date):
 @app.callback(
     Output('graph1', 'figure'),
     [Input('date-slider', 'value'),
-     Input("drilldown","value")])
+     Input("drilldown","value"),
+     Input("cases-deaths","value")
+     ])
 
-def update_figure(date_value,drilldown):
+def update_figure(date_value,drilldown,cases_deaths):
     current = dates[date_value]
+    if cases_deaths == "cases":
+        df = cases
+    else:
+        df = deaths
     print("Updating....")
     if drilldown == "States":
         sample = pd.DataFrame()
