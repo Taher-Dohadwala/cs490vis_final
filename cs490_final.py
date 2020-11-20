@@ -6,7 +6,8 @@ from numpy import inf
 #import and format trip data
 col_list = ['Level', 'Date', 'State FIPS', 'County FIPS',
        'County Name', 'Population Staying at Home', 'Number of Trips']
-trips = pd.read_csv('Trips_by_Distance.csv', usecols=col_list)
+trips = pd.read_pickle('Trips_by_Distance.gz')
+trips = trips.filter(col_list)
 
 trips['Date'] = trips['Date'].astype('datetime64[ns]')
 
@@ -149,5 +150,5 @@ final_county['Mobility'] = final_county['Mobility'].shift(11).interpolate(axis=0
 final_county = final_county.drop(columns = ['County FIPS', 'Population Staying at Home'])
 
 # Save to pickle files
-final_county.to_pickle("final_county.pkl")
-final_state.to_pickle("final_state.pkl")
+final_county.to_pickle("final_county.gz")
+final_state.to_pickle("final_state.gz")
