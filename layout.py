@@ -41,8 +41,8 @@ states = pd.read_pickle("final_state.gz",compression="gzip")
 # Get date range and states list
 dates = counties["Date"].unique()
 drilldown_options = ["States","Counties"]
-states = list(pd.unique(counties["State"]))
-[drilldown_options.append(x) for x in states]
+states_list = list(pd.unique(counties["State"]))
+[drilldown_options.append(x) for x in states_list]
 
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -131,10 +131,8 @@ def update_figure(date_value,drilldown,cases_deaths,map_data):
         else:
             data = "Death Rate Color"
         
-        
     if drilldown == "States":
         df = states[states["Date"] == current]
-        print(df.head())
         if color_map == "discrete":
             fig = px.choropleth(df,locationmode="USA-states",locations='State', color=data,color_discrete_map=discrete_color_map,scope="usa")
         else:
