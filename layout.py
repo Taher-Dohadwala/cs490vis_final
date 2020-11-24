@@ -19,22 +19,31 @@ import json
 with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
     geojson = json.load(response)
 
+#build discrete scolor map
+colors = ["#d3d3d3", "#97c5c5", "#52b6b6", "#c098b9", "#898ead", "#4a839f", "#ad5b9c", "#7c5592", "#434e87"]
+sample_pallette = ["Low Growth/Low Mobility",
+                   "Low Growth/Medium Mobility",
+                   "Low Growth/High Mobility",
+                   "Medium Growth/Low Mobility",
+                   "Medium Growth/Medium Mobility",
+                   "Medium Growth/High Mobility",
+                   "High Growth/Low Mobility",
+                   "High Growth/Medium Mobility",
+                   "High Growth/High Mobility"]
+
+discrete_color_map = {}
+for color,desc in zip(colors,sample_pallette):
+    discrete_color_map[desc] = color
 # Load data 
 counties = pd.read_pickle("final_county.gz",compression="gzip")
 states = pd.read_pickle("final_state.gz",compression="gzip")
 
-counties["countyFIPS"] = counties["countyFIPS"].astype(str)
-counties['countyFIPS'] = counties['countyFIPS'].apply(lambda x: ('0'+x if(len(x) == 4) else x))
 # Get date range and states list
 dates = counties["Date"].unique()
 drilldown_options = ["States","Counties"]
 states = list(pd.unique(counties["State"]))
 [drilldown_options.append(x) for x in states]
 
-discrete_color = list(pd.unique(counties["Case Rate Color"]))
-discrete_color_map = {}
-for i in discrete_color:
-    discrete_color_map[i] = i
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
