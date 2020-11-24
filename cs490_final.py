@@ -185,13 +185,24 @@ county_case_perc = np.percentile(final_county['Case growth rate'], [33, 66])
 county_death_perc = np.percentile(final_county['Death growth rate'], [33, 66])
 county_mob_perc = np.percentile(final_county['Mobility'], [33, 66])
 
-sample_pallette = ["#d3d3d3", "#97c5c5", "#52b6b6", "#c098b9", "#898ead", "#4a839f", "#ad5b9c", "#7c5592", "#434e87"]
-
+# sample_pallette = ["#d3d3d3", "#97c5c5", "#52b6b6", "#c098b9", "#898ead", "#4a839f", "#ad5b9c", "#7c5592", "#434e87"]
+sample_pallette = ["Low Growth/Low Mobility",
+                   "Low Growth/Medium Mobility",
+                   "Low Growth/High Mobility",
+                   "Medium Growth/Low Mobility",
+                   "Medium Growth/Medium Mobility",
+                   "Medium Growth/High Mobility",
+                   "High Growth/Low Mobility",
+                   "High Growth/Medium Mobility",
+                   "High Growth/High Mobility"]
 color_scale = np.array(sample_pallette)
 final_state['Death Rate Color'] = final_state.apply(lambda x: data2color(x['Death growth rate'], x['Mobility'],state_death_perc[0],state_death_perc[1],state_mob_perc[0],state_mob_perc[1], color_scale), axis=1)
 final_state['Case Rate Color'] = final_state.apply(lambda x: data2color(x['Case growth rate'], x['Mobility'],state_case_perc[0],state_case_perc[1],state_mob_perc[0],state_mob_perc[1], color_scale), axis=1)
 final_county['Death Rate Color'] = final_county.apply(lambda x: data2color(x['Death growth rate'], x['Mobility'],county_death_perc[0],county_death_perc[1],county_mob_perc[0],county_mob_perc[1], color_scale), axis=1)
 final_county['Case Rate Color'] = final_county.apply(lambda x: data2color(x['Case growth rate'], x['Mobility'],county_case_perc[0],county_case_perc[1],county_mob_perc[0],county_mob_perc[1], color_scale), axis=1)
+
+final_county['countyFIPS'] = final_county.apply(lambda x: str(x.countyFIPS) if len(str(x.countyFIPS)) == 5 else '0' + str(x.countyFIPS), axis=1)
+
 # Save to pickle files
 final_county.to_pickle("final_county.gz")
 final_state.to_pickle("final_state.gz")
