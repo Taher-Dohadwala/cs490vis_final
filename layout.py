@@ -14,6 +14,7 @@ from dash.dependencies import Input, Output
 from datetime import date
 from urllib.request import urlopen
 import json
+import plotly.graph_objs as go
 
 # get geojson to plot US map with plotly
 with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
@@ -31,9 +32,48 @@ sample_pallette = ["Low Growth/Low Mobility",
                    "High Growth/Medium Mobility",
                    "High Growth/High Mobility"]
 
+
 discrete_color_map = {}
 for color,desc in zip(colors,sample_pallette):
     discrete_color_map[desc] = color
+
+
+def colors_to_colorscale(biv_colors):
+    # biv_colors: list of  color codes in hexa or RGB255
+    # returns a discrete colorscale  defined by biv_colors
+    n = len(biv_colors)
+    biv_colorscale = []
+    for k, col in enumerate(biv_colors):
+        biv_colorscale.extend([[round(k / n, 2), col], [round((k + 1) / n, 2), col]])
+    return biv_colorscale
+
+
+def colorsquare(text_x, text_y, colorscale, n=3, xaxis='x2', yaxis='y2'):
+    # text_x : list of n strings, representing intervals of values for the first variable or its n percentiles
+    # text_y : list of n strings, representing intervals of values for the second variable or its n percentiles
+
+    z = [[j + n * i for j in range(n)] for i in range(n)]
+    n = len(text_x)
+    if len(text_x) != n or len(text_y) != n or len(colorscale) != 2 * n ** 2:
+        raise ValueError('Your lists of strings  must have the length {n} and the colorscale, {n**2}')
+
+    text = [[text_x[j] + '<br>' + text_y[i] for j in range(len(text_x))] for i in range(len(text_y))]
+    return go.Heatmap(x=list(range(n)),
+                      y=list(range(n)),
+                      z=z,
+                      xaxis=xaxis,
+                      yaxis=yaxis,
+                      text=text,
+                      hoverinfo='text',
+                      colorscale=colorscale,
+                      showscale=False)
+
+
+text_x = ["Low Mobility","Medium Mobility","High Mobility",]
+text_y = ["Low Growth","Medium Growth","High Growth",]
+
+color_legend = colorsquare(text_x, text_y, colors_to_colorscale(colors), xaxis='x1', yaxis='y1')
+
 # Load data 
 counties = pd.read_pickle("final_county.gz",compression="gzip")
 states = pd.read_pickle("final_state.gz",compression="gzip")
@@ -90,10 +130,20 @@ app.layout = html.Div([
         )
         ],className="three columns"),
     ],className="row",style={"padding":25}),
-    
+
     html.Div([
-        dcc.Graph(id='graph1')
-    ],className="row")
+        html.Div([
+            dcc.Graph(id='graph1')
+        ],className="eight columns"),
+        html.Div([
+            dcc.Graph(id='legend', figure=go.FigureWidget(data=[color_legend], layout = dict(title='Growth Rate vs Mobility Percentile',title_x = 0.5,title_y = 0.8,
+            width=400, height=350, autosize=False,
+            xaxis=dict(visible=True,ticktext=["Mobility <= 33rd", "33rd < Mobility <= 66th", "Mobility > 66th"], tickvals=[0,1,2]),
+            yaxis=dict(visible=True, ticktext=["Growth <= 33rd", "33rd < Growth <= 66th", "Growth > 66th"], tickvals=[0,1,2]),
+            hovermode='closest')
+))
+        ],className="four columns")
+    ],className="row"),
     
 ],className="row")
 
@@ -153,8 +203,7 @@ def update_figure(date_value,drilldown,cases_deaths,map_data):
             fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data)
         fig.update_geos(fitbounds="locations", visible=False)
         
-
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0},showlegend=False)
     print("Finished updating")
     return fig
 
