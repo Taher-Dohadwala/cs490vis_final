@@ -187,25 +187,26 @@ def update_figure(date_value,drilldown,cases_deaths,map_data):
     if drilldown == "States":
         df = states[states["Date"] == current]
         if color_map == "discrete":
-            fig = px.choropleth(df,locationmode="USA-states",locations='State', color=data,color_discrete_map=discrete_color_map,scope="usa",hover_name="State",hover_data=["Population Staying Home %"])
+            fig = px.choropleth(df,locationmode="USA-states",locations='State', color=data,color_discrete_map=discrete_color_map,scope="usa",hover_name="State",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %","Case growth rate","Mobility"])
         # continuous
         else:
-            fig = px.choropleth(df,locationmode="USA-states",locations='State', color=data,scope="usa",range_color=[states[data].min(),states[data].max()],hover_name="State",hover_data=["Population Staying Home %"])
+            col_range = np.percentile(states[data], [5,95])
+            fig = px.choropleth(df,locationmode="USA-states",locations='State', color=data,scope="usa",range_color=[col_range[0], col_range[1]],hover_name="State",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %","Case growth rate","Mobility"])
     elif drilldown == "Counties":
         df = counties[counties["Date"] == current]
         if color_map == "discrete":
-            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,color_discrete_map=discrete_color_map, scope="usa",hover_name="County Name",hover_data=["Population Staying Home %"])
+            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,color_discrete_map=discrete_color_map, scope="usa",hover_name="County Name",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %","Case growth rate","Mobility"])
         # continuous
         else:
-            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data, scope="usa",range_color=[0,2],hover_name="County Name",hover_data=["Population Staying Home %"])
+            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data, scope="usa",range_color=[0,2],hover_name="County Name",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %","Case growth rate","Mobility"])
 
     else:
         df = counties[counties["Date"] == current]
         df = df[df["State"] == drilldown]
         if color_map == "discrete":
-            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,color_discrete_map=discrete_color_map,hover_name="County Name",hover_data=["Population Staying Home %"])
+            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,color_discrete_map=discrete_color_map,hover_name="County Name",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %"])
         else:
-            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,range_color=[0,2],hover_name="County Name",hover_data=["Population Staying Home %"])
+            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,range_color=[0,2],hover_name="County Name",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %"])
         fig.update_geos(fitbounds="locations", visible=False)
         
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0},showlegend=False)

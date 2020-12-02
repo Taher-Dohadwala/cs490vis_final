@@ -131,8 +131,8 @@ final_state = final_state.sort_values(by=['stateFIPS', 'Date'])
 final_state['Population Staying Home %'] = (final_state['Population Staying at Home']/final_state['population'])*100
 # final_state['Change in trips'] = final_state['Number of Trips'] - final_state['Number of Trips'].shift(1)
 # final_state.loc[final_state.groupby('stateFIPS',as_index=False).head(1).index,'Change in trips'] = 0
-final_state['Case growth rate'] = np.abs(final_state['Case growth rate'].replace(np.inf, 1).replace(-np.inf, 0).interpolate(axis=0, limit_direction='forward').fillna(0))
-final_state['Death growth rate'] = np.abs(final_state['Death growth rate'].replace(np.inf, 1).replace(-np.inf, 0).interpolate(axis=0, limit_direction='forward').fillna(0))
+final_state['Case growth rate'] = abs(final_state['Case growth rate'].replace(np.inf, 1).replace(-np.inf, 0).interpolate(axis=0, limit_direction='forward').fillna(0))
+final_state['Death growth rate'] = abs(final_state['Death growth rate'].replace(np.inf, 1).replace(-np.inf, 0).interpolate(axis=0, limit_direction='forward').fillna(0))
 final_state['Mobility'] = final_state['Mobility'].shift(11).interpolate(axis=0, limit_direction='forward').fillna(1)
 final_state = final_state.drop(columns = ['State FIPS', 'County Name', 'Population Staying at Home'])
 final_state = final_state.dropna(subset=['Population Staying Home %'])
@@ -144,8 +144,8 @@ final_county = pd.merge(right=trips_county, left=case_death_county, how='left', 
 final_county = final_county.sort_values(by=['countyFIPS', 'Date'])
 final_county['Population Staying Home %'] = (final_county['Population Staying at Home']/final_county['population'])*100
 # final_county['Change in trips'] = final_county['Number of Trips'] - final_county['Number of Trips'].shift(1)
-final_county['Case growth rate'] = np.abs(final_county['Case growth rate'].replace(np.inf, 0).replace(-np.inf, 0).interpolate(axis=0, limit_direction='forward').fillna(0))
-final_county['Death growth rate'] = np.abs(final_county['Death growth rate'].replace(np.inf, 0).replace(-np.inf, 0).interpolate(axis=0, limit_direction='forward').fillna(0))
+final_county['Case growth rate'] = abs(final_county['Case growth rate'].replace(np.inf, 0).replace(-np.inf, 0).interpolate(axis=0, limit_direction='forward').fillna(0))
+final_county['Death growth rate'] = abs(final_county['Death growth rate'].replace(np.inf, 0).replace(-np.inf, 0).interpolate(axis=0, limit_direction='forward').fillna(0))
 final_county['Mobility'] = final_county['Mobility'].shift(11).interpolate(axis=0, limit_direction='forward').fillna(1)
 final_county = final_county.drop(columns = ['stateFIPS','County FIPS', 'Population Staying at Home'])
 final_county = final_county.dropna(subset=['Population Staying Home %'])
@@ -168,7 +168,7 @@ def data2color(x, y, a, b, c, d, biv_colors):
     n = 3    
     growth_col = set_interval_value(x, a, b)
     mob_col = set_interval_value(y, c, d)
-    col_idx = int(growth_col + n*mob_col)
+    col_idx = int(n*growth_col + mob_col)
     colors = np.array(biv_colors)[col_idx]
     return colors
 
