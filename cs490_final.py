@@ -163,14 +163,21 @@ def set_interval_value(x, a, b):
         return 2
 
 # maps growth rate, mobility to correct color
-def data2color(x, y, a, b, c, d, biv_colors):
+def data2color(x, y, z, a, b, c, d, e, f, biv_colors, growth_colors, mob_colors):
     n_colors = 9
     n = 3    
-    growth_col = set_interval_value(x, a, b)
+    case_col = set_interval_value(x, a, b)
     mob_col = set_interval_value(y, c, d)
-    col_idx = int(n*growth_col + mob_col)
-    colors = np.array(biv_colors)[col_idx]
-    return colors
+    death_col = set_interval_value(z, e, f)
+    case_idx = int(n*case_col + mob_col)
+    death_idx = int(n*death_col + mob_col)
+    case_colors = growth_colors[case_col]
+    mob_colors = mob_colors[mob_col]
+    death_colors = growth_colors[death_col]
+    case_mob_colors = biv_colors[case_idx]
+    death_mob_colors = biv_colors[death_idx]
+    pd.Series([case_mob_colors, death_mob_colors, case_colors, death_colors, mob_colors])
+    return pd.Series([case_mob_colors, death_mob_colors, case_colors, death_colors, mob_colors])
 
 state_case_perc = np.percentile(final_state['Case growth rate'], [33, 66])
 state_death_perc = np.percentile(final_state['Death growth rate'], [33, 66])
@@ -181,7 +188,7 @@ county_death_perc = np.percentile(final_county['Death growth rate'], [33, 66])
 county_mob_perc = np.percentile(final_county['Mobility'], [33, 66])
 
 # sample_pallette = ["#d3d3d3", "#97c5c5", "#52b6b6", "#c098b9", "#898ead", "#4a839f", "#ad5b9c", "#7c5592", "#434e87"]
-sample_pallette = ["Low Growth/Low Mobility",
+sample_pallette_biv = ["Low Growth/Low Mobility",
                    "Low Growth/Medium Mobility",
                    "Low Growth/High Mobility",
                    "Medium Growth/Low Mobility",
@@ -190,11 +197,14 @@ sample_pallette = ["Low Growth/Low Mobility",
                    "High Growth/Low Mobility",
                    "High Growth/Medium Mobility",
                    "High Growth/High Mobility"]
-color_scale = np.array(sample_pallette)
-final_state['Death Rate Color'] = final_state.apply(lambda x: data2color(x['Death growth rate'], x['Mobility'],state_death_perc[0],state_death_perc[1],state_mob_perc[0],state_mob_perc[1], color_scale), axis=1)
-final_state['Case Rate Color'] = final_state.apply(lambda x: data2color(x['Case growth rate'], x['Mobility'],state_case_perc[0],state_case_perc[1],state_mob_perc[0],state_mob_perc[1], color_scale), axis=1)
-final_county['Death Rate Color'] = final_county.apply(lambda x: data2color(x['Death growth rate'], x['Mobility'],county_death_perc[0],county_death_perc[1],county_mob_perc[0],county_mob_perc[1], color_scale), axis=1)
-final_county['Case Rate Color'] = final_county.apply(lambda x: data2color(x['Case growth rate'], x['Mobility'],county_case_perc[0],county_case_perc[1],county_mob_perc[0],county_mob_perc[1], color_scale), axis=1)
+growth_palette = ["Low Growth", "Medium Growth", "High Growth"]
+mob_palette = ["Low Mobility", "Medium Mobility", "High Mobility"]
+growth_palette = np.array(growth_palette)
+mob_palette = np.array(mob_palette)
+color_scale = np.array(sample_pallette_biv)
+
+final_state[['Case Rate Color','Death Rate Color','Case Color 1d','Death Color 1d','Mobility Color 1d']] = final_state.apply(lambda x: data2color(x['Case growth rate'], x['Mobility'], x['Death growth rate'],state_case_perc[0],state_case_perc[1],state_mob_perc[0],state_mob_perc[1],state_death_perc[0],state_death_perc[1], color_scale, growth_palette, mob_palette), axis=1)
+final_county[['Case Rate Color','Death Rate Color','Case Color 1d','Death Color 1d','Mobility Color 1d']] = final_county.apply(lambda x: data2color(x['Case growth rate'], x['Mobility'], x['Death growth rate'],county_case_perc[0],county_case_perc[1],county_mob_perc[0],county_mob_perc[1],county_death_perc[0],county_death_perc[1], color_scale, growth_palette, mob_palette), axis=1)
 
 final_county['countyFIPS'] = final_county.apply(lambda x: str(x.countyFIPS) if len(str(x.countyFIPS)) == 5 else '0' + str(x.countyFIPS), axis=1)
 

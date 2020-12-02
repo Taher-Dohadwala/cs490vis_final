@@ -56,11 +56,12 @@ def plot_counties():
 # Plotting states
 def plot_states():
     states = pd.read_pickle("final_state.gz",compression="gzip")
-    dates = states["Date"].unique()
-    sample = states[states.Date == dates[50]]
+#     dates = states["Date"].unique()
+#     sample = states[states.Date == dates[50]]
 
-    fig = px.choropleth(sample,locationmode="USA-states",locations='State', color='Case growth rate',scope="usa")
+    fig = px.choropleth(states,locationmode="USA-states",locations='State', color='Case growth rate',scope="usa", animation_frame="Date")
     
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
     fig.show()
 # 
+plot_states()                        
