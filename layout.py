@@ -176,6 +176,10 @@ app.layout = html.Div([
             dcc.Graph(id="heatmap",figure=mob_growth_heatmap)
         ],className="four columns")
     ],className="row"),
+    # html.Br(),
+    # html.Div([
+    #     dcc.Graph(figure= px.choropleth(counties, geojson=geojson,animation_frame="Date", locations="countyFIPS",scope="usa", color="Case Rate Color",color_discrete_map=covid_v_mob_color_map))
+    # ],className='row')
     
 ],className="row")
 
