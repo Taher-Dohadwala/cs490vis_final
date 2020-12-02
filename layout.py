@@ -83,6 +83,24 @@ def colorsquare(text_x, text_y, colorscale, n=3, xaxis='x2', yaxis='y2'):
                       colorscale=colorscale,
                       showscale=False)
 
+# Create discrete legends
+
+mob_heatmap = go.FigureWidget(data=[mob_legend], layout = dict(title='Mobility Percentile',title_x = 0.6,title_y = 0.8,
+            width=400, height=350, autosize=False,
+            xaxis=dict(visible=False),
+            yaxis=dict(visible=True,ticktext=["Mobility <= 33rd", "33rd < Mobility <= 66th", "Mobility > 66th"], tickvals=[0,1,2]),
+            hovermode='closest'))
+growth_heatmap = go.FigureWidget(data=[mob_legend], layout = dict(title='Growth Percentile',title_x = 0.6,title_y = 0.8,
+            width=400, height=350, autosize=False,
+            xaxis=dict(visible=False),
+            yaxis=dict(visible=True,ticktext=["Growth <= 33rd", "33rd < Growth <= 66th", "Growth > 66th"], tickvals=[0,1,2]),
+            hovermode='closest'))
+
+mob_growth_heatmap = go.FigureWidget(data=[color_legend], layout = dict(title='Growth Rate vs Mobility Percentile',title_x = 0.5,title_y = 0.8,
+            width=400, height=350, autosize=False,
+            xaxis=dict(visible=True,ticktext=["Mobility <= 33rd", "33rd < Mobility <= 66th", "Mobility > 66th"], tickvals=[0,1,2]),
+            yaxis=dict(visible=True, ticktext=["Growth <= 33rd", "33rd < Growth <= 66th", "Growth > 66th"], tickvals=[0,1,2]),
+            hovermode='closest'))
 
 text_x = ["Low Mobility","Medium Mobility","High Mobility",]
 text_y = ["Low Growth","Medium Growth","High Growth",]
