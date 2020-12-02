@@ -135,8 +135,8 @@ app.layout = html.Div([
         html.Div([
             dcc.Graph(id='graph1')
         ],className="eight columns"),
-        html.Div([
-            dcc.Graph(id='legend', figure=go.FigureWidget(data=[color_legend], layout = dict(title='Growth Rate vs Mobility Percentile',title_x = 0.5,title_y = 0.8,
+        html.Div(id="legend",children=[
+            dcc.Graph(figure=go.FigureWidget(data=[color_legend], layout = dict(title='Growth Rate vs Mobility Percentile',title_x = 0.5,title_y = 0.8,
             width=400, height=350, autosize=False,
             xaxis=dict(visible=True,ticktext=["Mobility <= 33rd", "33rd < Mobility <= 66th", "Mobility > 66th"], tickvals=[0,1,2]),
             yaxis=dict(visible=True, ticktext=["Growth <= 33rd", "33rd < Growth <= 66th", "Growth > 66th"], tickvals=[0,1,2]),
@@ -153,7 +153,7 @@ def update_display_date(date):
     return dates[date]
 
 @app.callback(
-    Output('graph1', 'figure'),
+    [Output('graph1', 'figure'),Output("legend","style")],
     [Input('date-slider', 'value'),
      Input("drilldown","value"),
      Input("cases-deaths","value"),
@@ -179,32 +179,38 @@ def update_figure(date_value,drilldown,cases_deaths,map_data):
             data = "Case Rate Color"
         else:
             data = "Death Rate Color"
-        
+    if color_map == "discrete":
+        legend = {'display': 'block'}
+    else:
+        legend = {'display': 'none'}
+    
     if drilldown == "States":
         df = states[states["Date"] == current]
         if color_map == "discrete":
-            fig = px.choropleth(df,locationmode="USA-states",locations='State', color=data,color_discrete_map=discrete_color_map,scope="usa")
+            fig = px.choropleth(df,locationmode="USA-states",locations='State', color=data,color_discrete_map=discrete_color_map,scope="usa",hover_name="State",hover_data=["Population Staying Home %"])
+        # continuous
         else:
-            fig = px.choropleth(df,locationmode="USA-states",locations='State', color=data,scope="usa")
+            fig = px.choropleth(df,locationmode="USA-states",locations='State', color=data,scope="usa",range_color=[states[data].min(),states[data].max()],hover_name="State",hover_data=["Population Staying Home %"])
     elif drilldown == "Counties":
         df = counties[counties["Date"] == current]
         if color_map == "discrete":
-            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,color_discrete_map=discrete_color_map, scope="usa")
+            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,color_discrete_map=discrete_color_map, scope="usa",hover_name="County Name",hover_data=["Population Staying Home %"])
+        # continuous
         else:
-            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data, scope="usa")
+            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data, scope="usa",range_color=[0,2],hover_name="County Name",hover_data=["Population Staying Home %"])
 
     else:
         df = counties[counties["Date"] == current]
         df = df[df["State"] == drilldown]
         if color_map == "discrete":
-            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,color_discrete_map=discrete_color_map)
+            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,color_discrete_map=discrete_color_map,hover_name="County Name",hover_data=["Population Staying Home %"])
         else:
-            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data)
+            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,range_color=[0,2],hover_name="County Name",hover_data=["Population Staying Home %"])
         fig.update_geos(fitbounds="locations", visible=False)
         
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0},showlegend=False)
     print("Finished updating")
-    return fig
+    return fig,legend
 
 if __name__ == '__main__':
     app.run_server(debug=True)
