@@ -48,9 +48,9 @@ for color,desc in zip(mob_colors,mob_palette):
     mob_color_map[desc] = color
 
 
-discrete_color_map = {}
+covid_v_mob_color_map = {}
 for color,desc in zip(colors,sample_pallette):
-    discrete_color_map[desc] = color
+    covid_v_mob_color_map[desc] = color
 
 
 def colors_to_colorscale(biv_colors):
@@ -103,6 +103,7 @@ states_list = list(pd.unique(counties["State"]))
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.layout = html.Div([
+    html.Center(children="How COVID-19 moved as we did",style={"size":50}),
     html.Div([
         html.Div([
             html.H4(children="Covid-19 Data:"),
@@ -136,12 +137,12 @@ app.layout = html.Div([
         ],className="three columns"),
         
         html.Div([
-        html.H4(children="Drilldown"),
+        html.H4(children="Geographic Level"),
         dcc.Dropdown(
             id="drilldown",
             options=[{"label":x,"value":x} for x in drilldown_options],
             multi=False,
-            value="Counties"
+            value="States"
         )
         ],className="three columns"),
     ],className="row",style={"padding":25}),
@@ -178,55 +179,44 @@ def update_figure(date_value,drilldown,cases_deaths,map_data):
     print("Updating....")
     current = dates[date_value]
     data = ""
-    color_map = "continuous"
-    
+    color_discrete_map = ""
+    legend = {'display': 'none'}
+
     if map_data == "covid":
         if cases_deaths == "cases":
             data = "Case Color 1d"
         else:
             data = "Death Color 1d"
+        color_discrete_map = growth_color_map
         
     elif map_data == "mobility":
         data = "Mobility Color 1d"
+        color_discrete_map = mob_color_map
     else:
-        color_map = "discrete"
+
         if cases_deaths == "cases":
             data = "Case Rate Color"
         else:
             data = "Death Rate Color"
-    if color_map == "discrete":
+        color_discrete_map = covid_v_mob_color_map
         legend = {'display': 'block'}
-    else:
-        legend = {'display': 'none'}
+    
     
     if drilldown == "States":
         df = states[states["Date"] == current]
-        if color_map == "discrete":
-            fig = px.choropleth(df,locationmode="USA-states",locations='State', color=data,color_discrete_map=discrete_color_map,scope="usa",hover_name="State",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %","Case growth rate","Mobility"])
-        # continuous
-        else:
-            col_range = np.percentile(states[data], [5,95])
-            fig = px.choropleth(df,locationmode="USA-states",locations='State', color=data,scope="usa",range_color=[col_range[0], col_range[1]],hover_name="State",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %","Case growth rate","Mobility"])
+        fig = px.choropleth(df,height=600,width=1400,locationmode="USA-states",locations='State', color=data,color_discrete_map=color_discrete_map,scope="usa",hover_name="State",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %","Case growth rate","Mobility"])
+        
     elif drilldown == "Counties":
         df = counties[counties["Date"] == current]
-        if color_map == "discrete":
-            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,color_discrete_map=discrete_color_map, scope="usa",hover_name="County Name",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %","Case growth rate","Mobility"])
-        # continuous
-        else:
-            col_range = np.percentile(counties[data], [5,95])
-            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data, scope="usa",range_color=[col_range[0], col_range[1]],hover_name="County Name",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %","Case growth rate","Mobility"])
-
+        fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,color_discrete_map=color_discrete_map, scope="usa",hover_name="County Name",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %","Case growth rate","Mobility"])
+  
     else:
         df = counties[counties["Date"] == current]
         df = df[df["State"] == drilldown]
-        if color_map == "discrete":
-            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,color_discrete_map=discrete_color_map,hover_name="County Name",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %"])
-        else:
-            col_range = np.percentile(states[data], [5,95])
-            fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,range_color=[col_range[0], col_range[1]],hover_name="County Name",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %"])
+        fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,color_discrete_map=color_discrete_map,hover_name="County Name",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %"])
         fig.update_geos(fitbounds="locations", visible=False)
         
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0},showlegend=False)
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0},showlegend=True)
     print("Finished updating")
     return fig,legend
 
