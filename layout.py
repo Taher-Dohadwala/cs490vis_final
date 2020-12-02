@@ -69,8 +69,6 @@ def colorsquare(text_x, text_y, colorscale, n=3, xaxis='x2', yaxis='y2'):
 
     z = [[j + n * i for j in range(n)] for i in range(n)]
     n = len(text_x)
-    if len(text_x) != n or len(text_y) != n or len(colorscale) != 2 * n ** 2:
-        raise ValueError('Your lists of strings  must have the length {n} and the colorscale, {n**2}')
 
     text = [[text_x[j] + '<br>' + text_y[i] for j in range(len(text_x))] for i in range(len(text_y))]
     return go.Heatmap(x=list(range(n)),
@@ -175,11 +173,7 @@ app.layout = html.Div([
             dcc.Graph(id='graph1',style={"height":"60vh","width":"75vw"})
         ],className="eight columns"),
         html.Div(id="legend",children=[
-            dcc.Graph(figure=go.FigureWidget(data=[color_legend], layout = dict(title='Growth Rate vs Mobility Percentile',title_x = 0.5,title_y = 0.8,
-            width=400, height=350, autosize=False,
-            xaxis=dict(visible=True,ticktext=["Mobility <= 33rd", "33rd < Mobility <= 66th", "Mobility > 66th"], tickvals=[0,1,2]),
-            yaxis=dict(visible=True, ticktext=["Growth <= 33rd", "33rd < Growth <= 66th", "Growth > 66th"], tickvals=[0,1,2]),
-            hovermode='closest')), config={'displayModeBar':False})
+            dcc.Graph(id="heatmap",figure=mob_growth_heatmap)
         ],className="four columns")
     ],className="row"),
     
@@ -192,7 +186,19 @@ def update_display_date(date):
     return dates[date]
 
 @app.callback(
-    [Output('graph1', 'figure'),Output("legend","style")],
+    Output("heatmap","figure"),
+    [Input("map-data","value")]
+)
+def update_heatmap(map_data):
+    if map_data == "covid":
+        return growth_heatmap
+    elif map_data == "mobility":
+        return mob_heatmap
+    else:
+        return mob_growth_heatmap
+        
+@app.callback(
+    Output('graph1', 'figure'),
     [Input('date-slider', 'value'),
      Input("drilldown","value"),
      Input("cases-deaths","value"),
@@ -203,7 +209,6 @@ def update_figure(date_value,drilldown,cases_deaths,map_data):
     current = dates[date_value]
     data = ""
     color_discrete_map = ""
-    legend = {'display': 'none'}
 
     if map_data == "covid":
         if cases_deaths == "cases":
@@ -222,7 +227,6 @@ def update_figure(date_value,drilldown,cases_deaths,map_data):
         else:
             data = "Death Rate Color"
         color_discrete_map = covid_v_mob_color_map
-        legend = {'display': 'block'}
     
     
     if drilldown == "States":
@@ -241,7 +245,7 @@ def update_figure(date_value,drilldown,cases_deaths,map_data):
         
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0},showlegend=False)
     print("Finished updating")
-    return fig,legend
+    return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)
