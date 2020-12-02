@@ -140,8 +140,7 @@ app.layout = html.Div([
             width=400, height=350, autosize=False,
             xaxis=dict(visible=True,ticktext=["Mobility <= 33rd", "33rd < Mobility <= 66th", "Mobility > 66th"], tickvals=[0,1,2]),
             yaxis=dict(visible=True, ticktext=["Growth <= 33rd", "33rd < Growth <= 66th", "Growth > 66th"], tickvals=[0,1,2]),
-            hovermode='closest')
-))
+            hovermode='closest')), config={'displayModeBar':False})
         ],className="four columns")
     ],className="row"),
     

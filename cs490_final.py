@@ -16,31 +16,26 @@ trips_state = trips_state.drop(columns=['County FIPS', 'Level'])
 trips_state['State FIPS'] = trips_state['State FIPS'].astype('int64')
 # trips_state = trips_state.dropna(subset=['Population Staying at Home'])
 
-
 trips_county = trips[trips['Level'] == 'County'].copy()
 trips_county = trips_county.drop(columns=['State FIPS', 'Level'])
 trips_county['County FIPS'] = trips_county['County FIPS'].astype('int64')
 # trips_county = trips_county.dropna(subset=['Population Staying at Home'])
 
-column_names = [0,1,2,3,4,5,6]
+base_trips_state = trips_state[(trips_state['Date']<='2019-12-31') & (trips_state['Date']>='2019-01-01')].copy()
+base_trips_state['DayMonth'] = base_trips_state['Date'].apply(lambda x: str(x.weekday())+str(x.month))
+base_trips_state = base_trips_state.groupby(['State FIPS','DayMonth'],as_index=False)['Number of Trips'].mean()
+base_trips_state = base_trips_state.pivot(index='State FIPS', columns='DayMonth', values='Number of Trips')
 
+base_trips_county = trips_county[(trips_county['Date']<='2019-12-31') & (trips_county['Date']>='2019-01-01')].copy()
+base_trips_county['DayMonth'] = base_trips_county['Date'].apply(lambda x: str(x.weekday())+str(x.month))
+base_trips_county = base_trips_county.groupby(['County FIPS','DayMonth'],as_index=False)['Number of Trips'].mean()
+base_trips_county = base_trips_county.pivot(index='County FIPS', columns='DayMonth', values='Number of Trips')
 
-base_trips_state = trips_state[(trips_state['Date']<='2020-01-21') & (trips_state['Date']>='2020-01-08')].copy()
-base_trips_state['Day'] = base_trips_state['Date'].apply(lambda x: x.weekday())
-base_trips_state = base_trips_state.groupby(['State FIPS','Day'],as_index=False)['Number of Trips'].mean()
-base_trips_state = base_trips_state.pivot(index='State FIPS', columns='Day', values='Number of Trips')
+trips_state = trips_state[(trips_state['State FIPS'].isin(list(base_trips_state.index))) & (trips_state['Date'] >= '2020-01-01')]
+trips_state['Mobility'] = trips_state['Number of Trips']/trips_state.apply(lambda row: base_trips_state.loc[row['State FIPS'],(str(row['Date'].weekday())+str(row['Date'].month))], axis = 1)
 
-base_trips_county = trips_county[(trips_county['Date']<='2020-01-21') & (trips_county['Date']>='2020-01-08')].copy()
-base_trips_county['Day'] = base_trips_county['Date'].apply(lambda x: x.weekday())
-base_trips_county = base_trips_county.groupby(['County FIPS','Day'],as_index=False)['Number of Trips'].mean()
-base_trips_county = base_trips_county.pivot(index='County FIPS', columns='Day', values='Number of Trips')
-
-trips_state = trips_state[trips_state['State FIPS'].isin(list(base_trips_state.index))]
-trips_state['Mobility'] = trips_state['Number of Trips']/trips_state.apply(lambda row: base_trips_state.loc[row['State FIPS'],row['Date'].weekday()], axis = 1)
-
-trips_county = trips_county[trips_county['County FIPS'].isin(list(base_trips_county.index))]
-trips_county['Mobility'] = trips_county['Number of Trips']/trips_county.apply(lambda row: base_trips_county.loc[row['County FIPS'],row['Date'].weekday()], axis = 1)
-
+trips_county = trips_county[(trips_county['County FIPS'].isin(list(base_trips_county.index))) & (trips_county['Date'] >= '2020-01-01')]
+trips_county['Mobility'] = trips_county['Number of Trips']/trips_county.apply(lambda row: base_trips_county.loc[row['County FIPS'],(str(row['Date'].weekday())+str(row['Date'].month))], axis = 1)
 
 # import and format county population data
 
