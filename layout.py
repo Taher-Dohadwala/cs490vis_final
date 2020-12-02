@@ -103,7 +103,7 @@ states_list = list(pd.unique(counties["State"]))
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.layout = html.Div([
-    html.Center(children="How COVID-19 moved as we did",style={"size":50}),
+    html.Center(children="How COVID-19 moved as we did"),
     html.Div([
         html.Div([
             html.H4(children="Covid-19 Data:"),
