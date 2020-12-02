@@ -84,28 +84,30 @@ def colorsquare(text_x, text_y, colorscale, n=3, xaxis='x2', yaxis='y2'):
                       showscale=False)
 
 # Create discrete legends
+mob_legend = colorsquare([''], mob_palette, colors_to_colorscale(mob_colors), xaxis='x1', yaxis='y1')
+growth_legend = colorsquare([''], growth_palette, colors_to_colorscale(growth_colors), xaxis='x1', yaxis='y1')
+text_x = ["Low Mobility","Medium Mobility","High Mobility",]
+text_y = ["Low Growth","Medium Growth","High Growth",]
+
+mob_growth_legend = colorsquare(text_x, text_y, colors_to_colorscale(colors), xaxis='x1', yaxis='y1')
 
 mob_heatmap = go.FigureWidget(data=[mob_legend], layout = dict(title='Mobility Percentile',title_x = 0.6,title_y = 0.8,
             width=400, height=350, autosize=False,
             xaxis=dict(visible=False),
             yaxis=dict(visible=True,ticktext=["Mobility <= 33rd", "33rd < Mobility <= 66th", "Mobility > 66th"], tickvals=[0,1,2]),
             hovermode='closest'))
-growth_heatmap = go.FigureWidget(data=[mob_legend], layout = dict(title='Growth Percentile',title_x = 0.6,title_y = 0.8,
+growth_heatmap = go.FigureWidget(data=[growth_legend], layout = dict(title='Growth Percentile',title_x = 0.6,title_y = 0.8,
             width=400, height=350, autosize=False,
             xaxis=dict(visible=False),
             yaxis=dict(visible=True,ticktext=["Growth <= 33rd", "33rd < Growth <= 66th", "Growth > 66th"], tickvals=[0,1,2]),
             hovermode='closest'))
 
-mob_growth_heatmap = go.FigureWidget(data=[color_legend], layout = dict(title='Growth Rate vs Mobility Percentile',title_x = 0.5,title_y = 0.8,
+mob_growth_heatmap = go.FigureWidget(data=[mob_growth_legend], layout = dict(title='Growth Rate vs Mobility Percentile',title_x = 0.5,title_y = 0.8,
             width=400, height=350, autosize=False,
             xaxis=dict(visible=True,ticktext=["Mobility <= 33rd", "33rd < Mobility <= 66th", "Mobility > 66th"], tickvals=[0,1,2]),
             yaxis=dict(visible=True, ticktext=["Growth <= 33rd", "33rd < Growth <= 66th", "Growth > 66th"], tickvals=[0,1,2]),
             hovermode='closest'))
 
-text_x = ["Low Mobility","Medium Mobility","High Mobility",]
-text_y = ["Low Growth","Medium Growth","High Growth",]
-
-color_legend = colorsquare(text_x, text_y, colors_to_colorscale(colors), xaxis='x1', yaxis='y1')
 
 # Load data 
 counties = pd.read_pickle("final_county.gz",compression="gzip")
