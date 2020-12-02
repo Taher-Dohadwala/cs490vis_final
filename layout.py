@@ -103,7 +103,10 @@ states_list = list(pd.unique(counties["State"]))
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.layout = html.Div([
-    html.Center(children="How COVID-19 moved as we did"),
+    html.Div([
+     html.Center(children="How COVID-19 moved as we did"),   
+    ],style={"font-size":50,"textAlign":"center"}),
+    
     html.Div([
         html.Div([
             html.H4(children="Covid-19 Data:"),
@@ -149,7 +152,7 @@ app.layout = html.Div([
 
     html.Div([
         html.Div([
-            dcc.Graph(id='graph1')
+            dcc.Graph(id='graph1',style={"height":"60vh","width":"75vw"})
         ],className="eight columns"),
         html.Div(id="legend",children=[
             dcc.Graph(figure=go.FigureWidget(data=[color_legend], layout = dict(title='Growth Rate vs Mobility Percentile',title_x = 0.5,title_y = 0.8,
@@ -204,7 +207,7 @@ def update_figure(date_value,drilldown,cases_deaths,map_data):
     
     if drilldown == "States":
         df = states[states["Date"] == current]
-        fig = px.choropleth(df,height=600,width=1400,locationmode="USA-states",locations='State', color=data,color_discrete_map=color_discrete_map,scope="usa",hover_name="State",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %","Case growth rate","Mobility"])
+        fig = px.choropleth(df,locationmode="USA-states",locations='State', color=data,color_discrete_map=color_discrete_map,scope="usa",hover_name="State",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %","Case growth rate","Mobility"])
         
     elif drilldown == "Counties":
         df = counties[counties["Date"] == current]
@@ -216,7 +219,7 @@ def update_figure(date_value,drilldown,cases_deaths,map_data):
         fig = px.choropleth(df, geojson=geojson, locations="countyFIPS", color=data,color_discrete_map=color_discrete_map,hover_name="County Name",hover_data=["New Cases","New Deaths", "Total Cases", "Total Deaths","Population Staying Home %"])
         fig.update_geos(fitbounds="locations", visible=False)
         
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0},showlegend=True)
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0},showlegend=False)
     print("Finished updating")
     return fig,legend
 
