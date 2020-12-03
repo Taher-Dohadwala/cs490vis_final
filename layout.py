@@ -257,4 +257,4 @@ def update_figure(date_value,drilldown,cases_deaths,map_data):
     return fig
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()
