@@ -15,11 +15,14 @@ from datetime import date
 from urllib.request import urlopen
 import json
 import plotly.graph_objs as go
-
+import pickle
 # get geojson to plot US map with plotly
 with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
     geojson = json.load(response)
-
+    
+# loading animation object
+with open('animation.pickle', 'rb') as handle:
+    animation = pickle.load(handle)
 #build discrete scolor map
 colors = ["#d3d3d3", "#97c5c5", "#52b6b6", "#c098b9", "#898ead", "#4a839f", "#ad5b9c", "#7c5592", "#434e87"]
 sample_pallette = ["Low Growth/Low Mobility",
@@ -176,10 +179,12 @@ app.layout = html.Div([
             dcc.Graph(id="heatmap",figure=mob_growth_heatmap)
         ],className="four columns")
     ],className="row"),
-    # html.Br(),
-    # html.Div([
-    #     dcc.Graph(figure= px.choropleth(counties, geojson=geojson,animation_frame="Date", locations="countyFIPS",scope="usa", color="Case Rate Color",color_discrete_map=covid_v_mob_color_map))
-    # ],className='row')
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Div([
+        dcc.Graph(figure= animation)
+    ],className='row')
     
 ],className="row")
 
